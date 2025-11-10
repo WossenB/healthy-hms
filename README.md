@@ -52,6 +52,24 @@ Prepare for Appointment System | Next phase after Patients
 
 ---
 
+## 🏥 Week 2 - Patient Management Module
+
+### ✅ Completed Features
+- Patient model, routes, and controllers
+- Create, view, update, and soft delete
+- Pagination, filtering, and search
+- Role-based access (Admin, Doctor)
+- Audit log system (tracks CREATE, UPDATE, DELETE actions)
+
+### 📦 Example Endpoints
+- `POST /api/patients`
+- `GET /api/patients`
+- `GET /api/patients/:id`
+- `PUT /api/patients/:id`
+- `DELETE /api/patients/:id`
+
+  ---
+
 ## 🛠️ Tech Stack
 
 - Node.js (Express + TypeScript)
