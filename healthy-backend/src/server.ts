@@ -4,7 +4,9 @@ import cors from 'cors';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import errorHandler from './midleware/errorHandler.js';
-import { protect, type AuthRequest } from './midleware/auth.js'; // ✅ import at top
+import { protect, type AuthRequest } from './midleware/auth.js';
+import patientRoutes from "./models/patient/patient.routes.js";
+ // ✅ import at top
 
 dotenv.config();
 const app = express();
@@ -17,7 +19,7 @@ connectDB();
 
 // routes
 app.use('/api/auth', authRoutes);
-
+app.use('/api/patients', patientRoutes);
 app.get('/', (_, res) => res.send('Healthy HMS Backend ✅'));
 
 // ✅ Protected test route
