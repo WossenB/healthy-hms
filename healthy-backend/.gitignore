@@ -19,3 +19,6 @@ Thumbs.db
 
 # VSCode settings (optional but recommended)
 .vscode/
+
+# Uploads
+uploads/
