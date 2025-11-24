@@ -8,6 +8,9 @@ import { protect, type AuthRequest } from './midleware/auth.js';
 import patientRoutes from "./models/patient/patient.routes.js";
 import labRoutes from "./models/lab/lab.routes.js";
 import labResultRoutes from "./models/lab/labResult.routes.js";
+import consultationRoutes from "./models/consultation/consultation.routes.js";
+import prescriptionRoutes from "./models/prescription/prescription.routes.js";
+import pharmacyRoutes from "./models/pharmacy/pharmacy.routes.js";
 import path from "path";
  // ✅ import at top
 
@@ -25,7 +28,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
 app.use("/api/labs", labRoutes);
 app.use("/api/lab-results", labResultRoutes);
+app.use("/api/consultations", consultationRoutes);
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+app.use("/api/prescriptions", prescriptionRoutes);
+app.use("/api/pharmacy", pharmacyRoutes);
 app.get('/', (_, res) => res.send('Healthy HMS Backend ✅'));
 
 // ✅ Protected test route
