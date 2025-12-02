@@ -5,12 +5,17 @@
 [![TypeScript](https://img.shields.io/badge/typescript-%3E%3D4.0-blue)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-Healthy HMS is a modular, scalable Hospital Management System backend built with Node.js, Express, TypeScript, and MongoDB. It aims to provide a clean, well-structured EMR/HMS backend supporting authentication, patient management, consultations, labs, prescriptions, pharmacy, and more.
+Healthy HMS is a modular, scalable Hospital Management System backend built with Node.js, Express, TypeScript, and MongoDB. It provides a production-oriented REST API for clinical workflows, billing, inventory, insurance, wards, notifications, pharmacy, labs, consultations and admin analytics.
+
+Summary of what I updated in this README
+- Consolidated core features already implemented (Auth, Patients, Labs, Consultations, Prescriptions, Pharmacy).
+- Added and documented the extended modules you described: Billing, Insurance, Wards/Beds, Inventory, Notifications, and Admin Dashboard endpoints.
+- Added example endpoints, env variables, run instructions, and brief migration/upgrade notes.
 
 Table of Contents
 - Project Overview
 - Tech Stack
-- Key Features (by week)
+- Key Features (by week & modules)
 - Project Structure
 - Getting Started
   - Prerequisites
@@ -22,16 +27,22 @@ Table of Contents
   - Patients
   - Labs & Lab Results
   - Consultations, Prescriptions & Pharmacy
+  - Billing & Payments
+  - Insurance
+  - Wards & Beds
+  - Inventory & Notifications
+  - Admin Dashboard / Analytics
 - Uploads / Files
-- Testing
+- Testing & Postman
+- Migration / Upgrade Notes
 - Roadmap (Next)
 - Contributing
 - License
-- Author
+- Author & Contact
 
 Project Overview
 ----------------
-Healthy HMS provides RESTful APIs to manage hospital workflows: authentication and RBAC, patient records, lab requests and results, consultations, prescriptions, and pharmacy dispensing. It focuses on modularity, audit logging, and clear separation of concerns to make it easy to extend.
+Healthy HMS aims to be an extensible EMR/HMS backend that supports both clinical workflows and hospital operations (billing, inventory, wards, insurance) with role-based access and audit logging. The backend is built to be modular so features can be extended independently.
 
 Tech Stack
 ----------
@@ -41,54 +52,83 @@ Tech Stack
 - JWT authentication
 - bcrypt for password hashing
 - Multer for file uploads
-- Role-Based Access Control (Admin, Doctor, Nurse, Lab Tech, Pharmacy)
+- CORS
+- Role-Based Access Control (Admin, Doctor, Nurse, Lab Tech, Pharmacy, Billing Clerk, Inventory Manager)
 - REST API architecture
 
-Key Features (by week)
-----------------------
+Key Features (by week & modules)
+--------------------------------
 Week 1 — Authentication & Core
 - JWT login + role-based access
 - bcrypt password hashing
 - Auth middleware and protected routes
-- Admin seeding script
-- Centralized error handler
+- Admin seeder
+- Centralized error handling and logging
 
 Week 2 — Patient Management
 - Create / Read / Update / Soft Delete patients
-- Pagination, filtering, and search (name, phone, ID)
-- Role access (Admin & Doctor)
-- Full audit logging for CRUD actions
+- Pagination, filtering, search (name, phone, ID)
+- Audit logging
 
-Week 3 — Laboratory Module
-- Create lab requests (doctors)
-- Status tracking: pending → completed
-- Lab results: upload PDFs/images, findings as JSON
-- Auto-link results to lab requests
-- File serving via /uploads
+Week 3 — Laboratory
+- Lab requests by doctors
+- Lab results upload (PDF/images) with JSON findings
+- Status tracking & file serving
 
 Week 4 — Consultations, Prescriptions & Pharmacy
-- Consultations: record symptoms, diagnosis, vitals and link lab requests/prescriptions
-- Prescriptions: linked to consultations; query by patient/consultation
-- Pharmacy: manage stock, edit medicines, dispense from prescription with auto-deduction and audit
+- Consultations linked to patients and doctors
+- Prescriptions linked to consultations
+- Pharmacy stock management, dispense with auto-deduction and audit
+
+Extended Modules (new / documented)
+- Billing & Payments
+  - Invoices, multi-method payments (cash, insurance, partial)
+  - Outstanding balance tracking
+  - Invoice generation endpoints
+- Insurance
+  - Insurance companies and coverage policies
+  - Insurance claims auto-generated from billing
+- Wards & Beds
+  - Create wards and auto-generate beds
+  - Assign / release beds
+  - Occupancy metrics & endpoints
+- Inventory Management
+  - CRUD for inventory items, stock-in/stock-out, batch & expiry metadata
+  - Threshold checks and auto-logged low-stock events
+- Notification System
+  - System notifications (low stock alerts, billing reminders)
+  - Mark as read/unread
+- Admin Dashboard API
+  - Revenue, patient growth, lab trends, pharmacy stats, ward occupancy, inventory value, 30-day charts, weekly/monthly analytics, monthly new patients, etc.
 
 Project Structure
 -----------------
-healthy-backend/
-├─ src/
-│  ├─ config/           # DB & env setup
-│  ├─ middleware/       # auth, error handler, file uploads
-│  ├─ models/           # modular models (patient, lab, consultation, prescription, pharmacy)
-│  ├─ routes/           # route registrars
-│  ├─ utils/            # helpers (JWT, audit logger, etc)
-├─ uploads/              # lab result uploads (served publicly)
-├─ server.ts             # app entry point
+src/
+ ├── config/           # DB & environment setup
+ ├── middleware/       # auth, error handler, uploads, role guard
+ ├── models/
+ │    ├── patient/
+ │    ├── lab/
+ │    ├── consultations/
+ │    ├── pharmacy/
+ │    ├── billing/
+ │    ├── payment/
+ │    ├── insurance/
+ │    ├── ward/
+ │    ├── inventory/
+ │    └── notification/
+ ├── routes/
+ ├── services/         # business logic (billing, claims, inventory processing)
+ ├── utils/            # helpers (jwt, audit logger, csv/pdf helpers)
+ ├── app.ts
+ └── server.ts
 
 Getting Started
 ---------------
 Prerequisites
 - Node.js >= 14
 - npm or yarn
-- MongoDB (local or a hosted instance)
+- MongoDB (local or hosted)
 
 Installation
 1. Clone the repo
@@ -96,7 +136,6 @@ Installation
    git clone https://github.com/<owner>/healthy-backend.git
    cd healthy-backend
    ```
-
 2. Install dependencies
    ```bash
    npm install
@@ -105,12 +144,14 @@ Installation
    ```
 
 Environment Variables
-Create a `.env` file in the project root with at least:
+Create a `.env` file in the project root:
 
 ```
-MONGO_URI=your_mongo_connection_url
-JWT_SECRET=your_secret_key
+MONGO_URI=mongodb://localhost:27017/healthy_hms
+JWT_SECRET=your-secret
 PORT=4000
+UPLOAD_DIR=uploads
+NODE_ENV=development
 ```
 
 Running
@@ -128,9 +169,9 @@ API Highlights & Examples
 ------------------------
 
 Notes
-- All endpoints under /api are protected unless noted.
-- Use Authorization: Bearer <token> header for protected routes.
-- Role-based access: Admin, Doctor, Nurse, Lab Tech, Pharmacy.
+- All endpoints under /api are protected unless noted otherwise.
+- Use Authorization: Bearer <JWT Token> for protected routes.
+- Role-based access is enforced on endpoints (Admin, Doctor, Nurse, Lab Tech, Pharmacy, Billing, Inventory roles).
 
 Authentication
 POST /api/auth/login
@@ -154,88 +195,117 @@ Response:
 ```
 
 Patients
-- POST /api/patients — Create patient (Admin, Doctor)
-- GET /api/patients — Paginated list with filters
-- GET /api/patients/:id — Get by ID
-- PUT /api/patients/:id — Update
-- DELETE /api/patients/:id — Soft delete
-
-Example: Create patient
-```bash
-curl -X POST http://localhost:4000/api/patients \
-  -H "Authorization: Bearer <token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "firstName": "Jane",
-    "lastName": "Doe",
-    "phone": "+2519xxxxxxx",
-    "dob": "1990-05-12",
-    "gender": "female"
-  }'
-```
+- POST /api/patients
+- GET /api/patients?limit=20&page=1&search=jane
+- GET /api/patients/:id
+- PUT /api/patients/:id
+- DELETE /api/patients/:id (soft delete)
 
 Laboratory
-- POST /api/labs — Create lab request (Doctor)
-- POST /api/lab-results — Upload lab result (Lab Tech) — multipart/form-data for files
+- POST /api/labs — Create lab request
+- POST /api/lab-results — Upload lab result (multipart/form-data)
 - GET /api/labs/:id
 - GET /api/lab-results/by-request/:requestId
 - GET /api/lab-results/by-patient/:patientId
 
-Consultations
-- POST /api/consultations — Create consultation (Doctor)
-- POST /api/consultations/:id/add-lab-request — Attach lab request
-- GET /api/consultations/:id
-
-Prescriptions
-- POST /api/prescriptions/add/:consultationId — Create prescription
-- GET /api/prescriptions/:id
+Consultations & Prescriptions
+- POST /api/consultations
+- POST /api/consultations/:id/add-lab-request
+- POST /api/prescriptions/add/:consultationId
 - GET /api/prescriptions/by-patient/:patientId
-- GET /api/prescriptions/by-consultation/:consultationId
 
 Pharmacy
-- POST /api/pharmacy — Add medicine to stock
+- POST /api/pharmacy — Add medicine
 - GET /api/pharmacy
-- GET /api/pharmacy/:id
 - PUT /api/pharmacy/:id
-- POST /api/pharmacy/dispense/:prescriptionId — Dispense medicines (auto-deduct stock, audit who dispensed)
+- POST /api/pharmacy/dispense/:prescriptionId
+
+Billing & Payments
+- POST /api/billing/invoices — Create invoice (auto link to patient services)
+- GET /api/billing/invoices/:id
+- GET /api/billing/by-patient/:patientId
+- POST /api/billing/pay/:invoiceId — Payments (body includes method: cash|insurance|partial)
+- GET /api/billing/outstanding — Outstanding balances
+
+Insurance
+- POST /api/insurance/companies — Add insurer
+- GET /api/insurance/companies
+- POST /api/insurance/policies — Define coverage
+- POST /api/insurance/claims/generate/:invoiceId — Auto-create claim from invoice
+- GET /api/insurance/claims/:id
+
+Wards & Beds
+- POST /api/wards — Create ward (specify capacity)
+- GET /api/wards
+- POST /api/wards/:wardId/generate-beds — Auto-create beds for a ward
+- POST /api/beds/:bedId/assign — Assign bed to patient
+- POST /api/beds/:bedId/release — Release bed
+- GET /api/wards/occupancy — Occupancy metrics
+
+Inventory & Notifications
+- POST /api/inventory — Add/update item
+- GET /api/inventory
+- POST /api/inventory/:id/stock-in
+- POST /api/inventory/:id/stock-out
+- GET /api/inventory/low-stock — Items below threshold
+- GET /api/notifications — List notifications
+- POST /api/notifications/mark-read/:id
+
+Admin Dashboard / Analytics
+- GET /api/dashboard/revenue-weekly
+- GET /api/dashboard/revenue-monthly
+- GET /api/dashboard/patient-growth
+- GET /api/dashboard/lab-trends
+- GET /api/dashboard/pharmacy-stats
+- GET /api/dashboard/ward-occupancy
+- GET /api/dashboard/inventory-value
+- GET /api/dashboard/30-day-revenue-chart
+- GET /api/dashboard/new-patients-monthly
 
 Uploads / Files
-- Uploaded lab results (PDF/images) are saved to /uploads.
-- Files are served statically at the /uploads route (e.g., http://host/uploads/<file>).
+- Uploaded lab results and files are saved in the `uploads/` directory.
+- Files are served at /uploads/<filename> when server is configured to expose the uploads folder.
 
-Testing
--------
-- Use Postman / Insomnia to exercise the API endpoints.
-- Seeded admin credentials (if seeder runs at setup) may be:
+Testing & Postman
+-----------------
+- Use Postman / Insomnia to exercise the API.
+- Import the project Postman collection (if included in repo).
+- Example base URL: http://localhost:4000/api
+- Seeded admin (if seeder enabled):
   - Email: admin@healthy.local
   - Password: Admin@123
-- Run unit/integration tests (if any)
-  ```bash
-  npm test
-  ```
 
-Roadmap (Next: Week 5+)
------------------------
-Planned features:
-- Inventory Module (equipment & supplies)
-  - Stock in / stock out, batch & expiry, low stock alerts
-- Billing & Invoicing
-  - Service charges, payments, patient billing history
-- Notifications & Alerts
-- Improved analytics and reporting
+Migration / Upgrade Notes
+-------------------------
+If you are upgrading from the initial Weeks 1–4 backend to the extended modules:
+- New models/tables: billing, payment, insurance, ward, bed, inventory, notification.
+- Run migrations or seed scripts if available to create default insurers, sample inventory items, and wards.
+- Ensure environment variable UPLOAD_DIR is set if uploads are moved.
+- Review role assignments — new roles may be required for Billing Clerk and Inventory Manager.
+
+Roadmap (Next)
+--------------
+Planned enhancements after current modules:
+- Payment gateway integration (Stripe/Paystack)
+- Claims reconciliation and insurer webhooks
+- Advanced reporting & scheduled reports
+- Real-time notifications (WebSocket) for urgent alerts
+- Role & permission manager with UI integration
+- Multi-tenant support for hospitals/clinics
 
 Contributing
 ------------
 Contributions, issues, and feature requests are welcome.
 1. Fork the repo
-2. Create a feature branch: git checkout -b feat/my-feature
-3. Commit your changes: git commit -m "feat: add ..."
-4. Push to the branch and open a PR
+2. Create a branch: git checkout -b feat/your-feature
+3. Commit: git commit -m "feat: ..."
+4. Push & open a PR
 
 Guidelines
 - Use TypeScript types & interfaces
-- Write unit tests for new features
-- Keep endpoints RESTful and documented
+- Write tests for changes
+- Keep endpoints RESTful and well-documented
+- Add audit logs for write operations where appropriate
 
 License
 -------
@@ -248,7 +318,10 @@ Backend Developer • Full-Stack Engineer • Node.js & React Specialist
 GitHub: @WossenB
 
 Contact / Support
-- Open an issue on this repository for bugs or feature requests.
-- For design/architecture questions, please include relevant request ids, example payloads, and logs where appropriate.
+- Open an issue on the repository for bugs or feature requests.
+- For architecture or data-migration questions, include example payloads and logs.
 
-Thank you for checking out Healthy HMS — contributions and feedback are very welcome!
+Thank you for building Healthy HMS — this README now contains the expanded backend modules and admin analytics you described. If you want, I can:
+- generate a Postman collection example for the new endpoints,
+- add sample JSON schemas for billing/invoice/claim payloads,
+- or create a short migration script template for inventory/wards seeding.
