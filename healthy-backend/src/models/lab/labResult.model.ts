@@ -44,4 +44,4 @@ const labResultSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("LabResult", labResultSchema);
+export default mongoose.models.LabResult || mongoose.model("LabResult", labResultSchema);

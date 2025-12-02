@@ -16,4 +16,4 @@ const labRequestSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("LabRequest", labRequestSchema);
+export default mongoose.models.LabRequest || mongoose.model("LabRequest", labRequestSchema);

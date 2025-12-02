@@ -11,6 +11,16 @@ import labResultRoutes from "./models/lab/labResult.routes.js";
 import consultationRoutes from "./models/consultation/consultation.routes.js";
 import prescriptionRoutes from "./models/prescription/prescription.routes.js";
 import pharmacyRoutes from "./models/pharmacy/pharmacy.routes.js";
+import invoiceRoutes from "./models/billing/invoice.routes.js";
+import paymentRoutes from "./models/payment/payment.routes.js";
+import insuranceCompanyRoutes from "./models/insurance/company.routes.js";
+import coverageRoutes from "./models/insurance/coverage.routes.js";
+import claimRoutes from "./models/insurance/claim.routes.js";
+import wardRoutes from "./models/ward/ward.routes.js";
+import inventoryRoutes from "./models/inventory/inventory.routes.js";
+import reportRoutes from "./models/reports/report.routes.js";
+import dashboardRoutes from "./models/dashboard/dashboard.routes.js";
+import notificationRoutes from "./models/notification/notification.routes.js"; 
 import path from "path";
  // ✅ import at top
 
@@ -32,6 +42,16 @@ app.use("/api/consultations", consultationRoutes);
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use("/api/prescriptions", prescriptionRoutes);
 app.use("/api/pharmacy", pharmacyRoutes);
+app.use("/api/invoices", invoiceRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/insurance-companies", insuranceCompanyRoutes);
+app.use("/api/insurance-coverage", coverageRoutes);
+app.use("/api/insurance-claims", claimRoutes);
+app.use("/api/wards", wardRoutes);
+app.use("/api/inventory", inventoryRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/reports", reportRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 app.get('/', (_, res) => res.send('Healthy HMS Backend ✅'));
 
 // ✅ Protected test route
