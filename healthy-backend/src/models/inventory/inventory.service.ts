@@ -1,5 +1,7 @@
 import InventoryItem from "./inventory.model.js";
 import Notification from "../notification/notification.model.js";
+import { logActivity } from "../../utils/logActivity.js";
+import { getPagination } from "../../utils/pagination.js"; 
 
 // Create inventory item
 export const createInventoryItem = async (data) => {
@@ -26,15 +28,27 @@ export const getInventoryItem = (id) => {
 };
 
 // Deduct stock
-export const deductInventoryStock = async (id, amount) => {
+export const deductInventoryStock = async (id, amount, user) => {
   const item = await InventoryItem.findById(id);
   if (!item) throw new Error("Item not found");
 
   if (item.quantity < amount) throw new Error("Insufficient stock");
 
+const before = item.toObject();
+
   item.quantity -= amount;
   await item.save();
 
+  const after = item.toObject();
+  await logActivity({
+    user,
+    module: "inventory",
+    action: "deduct_stock",
+    description: `Deducted ${amount} ${item.unit} of ${item.name}`,
+    type: "advanced",
+    before,
+    after,
+  });
   // Trigger low-stock notification
   if (item.quantity <= item.threshold) {
     await Notification.create({

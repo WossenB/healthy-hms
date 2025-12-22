@@ -6,13 +6,17 @@ const patientSchema = new mongoose.Schema(
     lastName: { type: String, required: true },
     gender: { type: String, enum: ["male", "female"], required: true },
     dateOfBirth: { type: Date, required: true },
-    phone: { type: String, required: true, unique: true },
+    phone: { type: String, required: true },
     address: { type: String, required: true },
 
     // Optional medical info
     bloodGroup: {
       type: String,
       enum: ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"],
+    },
+    documents: {
+      type: [String],
+      default: [],
     },
     chronicDiseases: [{ type: String }],
     allergies: [{ type: String }],
@@ -24,6 +28,11 @@ const patientSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+patientSchema.index({ firstName: 1, lastName: 1 });
+patientSchema.index({ phone: 1 }, { unique: true });
+patientSchema.index({ createdAt: -1 });
+patientSchema.index({ isActive: 1 });
 
 const Patient = mongoose.model("Patient", patientSchema);
 

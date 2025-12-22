@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
-import errorHandler from './midleware/errorHandler.js';
+import { errorHandler } from './midleware/errorHandler.js';
 import { protect, type AuthRequest } from './midleware/auth.js';
 import patientRoutes from "./models/patient/patient.routes.js";
 import labRoutes from "./models/lab/lab.routes.js";
@@ -21,6 +21,14 @@ import inventoryRoutes from "./models/inventory/inventory.routes.js";
 import reportRoutes from "./models/reports/report.routes.js";
 import dashboardRoutes from "./models/dashboard/dashboard.routes.js";
 import notificationRoutes from "./models/notification/notification.routes.js"; 
+import activityLogRoutes from "./models/activity/activityLog.routes.js";
+import auditLogRoutes from "./models/audit/audit.routes.js";
+import messageRoutes from "./models/message/message.routes.js";
+import appointmentRoutes from "./models/appointment/appointment.routes.js";
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./docs/swagger.js";
+
+
 import path from "path";
  // ✅ import at top
 
@@ -52,7 +60,13 @@ app.use("/api/inventory", inventoryRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/activity-logs", activityLogRoutes);
+app.use("/api/audit-logs", auditLogRoutes);
+app.use("/api/messages", messageRoutes);
+app.use("/api/appointments", appointmentRoutes);
 app.get('/', (_, res) => res.send('Healthy HMS Backend ✅'));
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 
 // ✅ Protected test route
 app.get('/api/protected', protect, (req: AuthRequest, res) => {

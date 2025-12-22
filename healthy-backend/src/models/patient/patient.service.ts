@@ -1,11 +1,13 @@
 import Patient from "./patient.model.js";
+import { getPagination } from "../../utils/pagination.js";
 
 export const createPatient = async (data) => {
   return await Patient.create(data);
 };
 
 export const getAllPatients = async (query) => {
-  const { page = 1, limit = 10, search = "" } = query;
+  const { search = "" } = query;
+  const { page, limit, skip } = getPagination(query);
 
   const filter = {
     isActive: true,
@@ -19,18 +21,21 @@ export const getAllPatients = async (query) => {
 
   const patients = await Patient.find(filter)
     .populate("createdBy", "name email role")
-    .skip((page - 1) * limit)
-    .limit(Number(limit))
-    .sort({ createdAt: -1 });
+    .skip(skip)
+    .limit(limit)
+    .sort({ createdAt: -1 })
+    .lean();
 
   const total = await Patient.countDocuments(filter);
 
   return {
-    total,
-    page: Number(page),
-    limit: Number(limit),
-    totalPages: Math.ceil(total / limit),
-    patients,
+    data: patients,
+    meta: {
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit),
+    },
   };
 };
 
@@ -38,7 +43,9 @@ export const softDeletePatient = async (id) => {
   return await Patient.findByIdAndUpdate(id, { isActive: false }, { new: true });
 };
 export const getPatientById = async (id: string) => {
-  const patient = await Patient.findById(id).populate("createdBy", "name email role");
+  const patient = await Patient.findById(id)
+    .populate("createdBy", "name email role")
+    .lean();
   if (!patient) throw new Error("Patient not found");
   return patient;
 };
@@ -51,4 +58,5 @@ export const updatePatient = async (id: string, data: any) => {
   await patient.save();
   return patient;
 };
+
 

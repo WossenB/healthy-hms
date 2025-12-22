@@ -44,7 +44,7 @@ import {
   export const deductStockController = async (req, res) => {
     const { amount } = req.body;
   
-    const item = await deductInventoryStock(req.params.id, amount);
+    const item = await deductInventoryStock(req.params.id, amount, req.user);
   
     res.json({ message: "Stock updated", item });
   };

@@ -57,6 +57,9 @@ paymentSchema.pre("save", function (next) {
   }
   next();
 });
+paymentSchema.index({ patient: 1 });
+paymentSchema.index({ createdAt: -1 });
+
 
 const Payment =
   mongoose.models.Payment || mongoose.model("Payment", paymentSchema);

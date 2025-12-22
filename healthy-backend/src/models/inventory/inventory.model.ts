@@ -28,4 +28,8 @@ const inventorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+inventorySchema.index({ name: 1 });
+inventorySchema.index({ category: 1 });
+inventorySchema.index({ quantity: 1 });
+
 export default mongoose.model("InventoryItem", inventorySchema);

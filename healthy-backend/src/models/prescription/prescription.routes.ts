@@ -9,6 +9,32 @@ import {
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Prescriptions
+ *   description: Medication prescriptions
+ */
+
+/**
+ * @swagger
+ * /api/prescriptions/add/{id}:
+ *   post:
+ *     summary: Add prescription for a consultation
+ *     tags: [Prescriptions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Consultation ID
+ *     responses:
+ *       201:
+ *         description: Prescription created
+ */
 router.post(
   "/add/:id",
   protect,
@@ -20,10 +46,67 @@ router.post(
   addPrescriptionController
 );
 
+/**
+ * @swagger
+ * /api/prescriptions/by-patient/{patientId}:
+ *   get:
+ *     summary: Get prescriptions by patient
+ *     tags: [Prescriptions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: patientId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of prescriptions
+ */
 // GET routes — specific BEFORE generic
 router.get("/by-patient/:patientId", protect, getByPatientController);
+
+/**
+ * @swagger
+ * /api/prescriptions/by-consultation/{consultationId}:
+ *   get:
+ *     summary: Get prescriptions by consultation
+ *     tags: [Prescriptions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: consultationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of prescriptions
+ */
 router.get("/by-consultation/:consultationId", protect, getByConsultationController);
 
+/**
+ * @swagger
+ * /api/prescriptions/{id}:
+ *   get:
+ *     summary: Get prescription by ID
+ *     tags: [Prescriptions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Prescription data
+ *       404:
+ *         description: Not found
+ */
 // MUST BE LAST
 router.get("/:id", protect, getPrescriptionController);
 
